@@ -21,13 +21,8 @@ class LoadBalancer:
         self.idx = 0
 
     def distribute(self, req_id):
-        if self.algo == "round_robin":
-            s = self.servers[self.idx]
-            self.idx = (self.idx + 1) % len(self.servers)
-        elif self.algo == "least_connections":
-            s = min(self.servers, key=lambda s: s.active)
-        else:
-            s = random.choice(self.servers)
+        s = self.servers[self.idx]
+        self.idx = (self.idx + 1) % len(self.servers)
         threading.Thread(target=s.handle, args=(req_id,)).start()
 
 if __name__ == "__main__":
