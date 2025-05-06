@@ -2,33 +2,23 @@ import random
 import threading
 import time
 
-class Server:
-    def __init__(self, id):
-        self.id = id
-        self.active = 0
+servers = [{"id": i, "active": 0} for i in range(3)]
+idx = 0
 
-    def handle(self, req_id):
-        self.active += 1
-        print(f"Server {self.id} handling {req_id} | Active: {self.active}")
-        time.sleep(random.uniform(1, 3))
-        self.active -= 1
-        print(f"Server {self.id} finished {req_id} | Active: {self.active}")
+def handle(server, req_id):
+    server["active"] += 1
+    print(f"Server {server['id']} handling {req_id} | Active: {server['active']}")
+    time.sleep(random.uniform(1, 3))
+    server["active"] -= 1
+    print(f"Server {server['id']} finished {req_id} | Active: {server['active']}")
 
-class LoadBalancer:
-    def __init__(self, servers, algo="round_robin"):
-        self.servers = servers
-        self.algo = algo
-        self.idx = 0
-
-    def distribute(self, req_id):
-        s = self.servers[self.idx]
-        self.idx = (self.idx + 1) % len(self.servers)
-        threading.Thread(target=s.handle, args=(req_id,)).start()
+def distribute(req_id):
+    global idx
+    server = servers[idx]
+    idx = (idx + 1) % len(servers)
+    threading.Thread(target=handle, args=(server, req_id)).start()
 
 if __name__ == "__main__":
-    servers = [Server(i) for i in range(3)]
-    lb = LoadBalancer(servers, "round_robin")
-
     for i in range(1, 11):
         time.sleep(random.uniform(0.5, 1.5))
-        lb.distribute(i)
+        distribute(i)
